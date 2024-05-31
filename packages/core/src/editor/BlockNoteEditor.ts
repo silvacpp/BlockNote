@@ -430,33 +430,39 @@ export class BlockNoteEditor<
   public getBlock(
     blockIdentifier: BlockIdentifier
   ): Block<BSchema, ISchema, SSchema> | undefined {
-    const id =
-      typeof blockIdentifier === "string"
-        ? blockIdentifier
-        : blockIdentifier.id;
-    let newBlock: Block<BSchema, ISchema, SSchema> | undefined = undefined;
 
-    this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
-      if (typeof newBlock !== "undefined") {
+    try{
+      const id =
+        typeof blockIdentifier === "string"
+          ? blockIdentifier
+          : blockIdentifier.id;
+      let newBlock: Block<BSchema, ISchema, SSchema> | undefined = undefined;
+  
+      this._tiptapEditor.state.doc.firstChild!.descendants((node) => {
+        if (typeof newBlock !== "undefined") {
+          return false;
+        }
+  
+        if (node.type.name !== "blockContainer" || node.attrs.id !== id) {
+          return true;
+        }
+  
+        newBlock = nodeToBlock(
+          node,
+          this.schema.blockSchema,
+          this.schema.inlineContentSchema,
+          this.schema.styleSchema,
+          this.blockCache
+        );
+  
         return false;
-      }
-
-      if (node.type.name !== "blockContainer" || node.attrs.id !== id) {
-        return true;
-      }
-
-      newBlock = nodeToBlock(
-        node,
-        this.schema.blockSchema,
-        this.schema.inlineContentSchema,
-        this.schema.styleSchema,
-        this.blockCache
-      );
-
-      return false;
-    });
-
-    return newBlock;
+      });
+  
+      return newBlock;
+    }catch(e){
+      return false
+    }
+    
   }
 
   /**
